@@ -43,10 +43,12 @@ function GetAccount(name, owner)
 		end
 	end
 end
+exports("GetAccount", GetAccount)
 
 function GetSharedAccount(name)
 	return SharedAccounts[name]
 end
+exports("GetSharedAccount", GetSharedAccount)
 
 --- Adds a shared account for a society/job.
 -- @param society (table) A table containing:
@@ -96,6 +98,7 @@ function AddSharedAccount(society, amount)
 
     return true, "Success"
 end
+exports("AddSharedAccount", AddSharedAccount)
 
 AddEventHandler('esx_addonaccount:getAccount', function(name, owner, cb)
 	cb(GetAccount(name, owner))

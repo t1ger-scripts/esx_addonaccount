@@ -13,10 +13,4 @@ server_scripts {
 	'server/main.lua'
 }
 
-server_exports {
-    'GetSharedAccount',
-    'AddSharedAccount',
-    'GetAccount'
-}
-
 dependency 'es_extended'

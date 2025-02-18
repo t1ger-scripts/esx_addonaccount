@@ -96,7 +96,7 @@ function AddSharedAccount(society, amount)
     -- Successfully created account
     SharedAccounts[society.name] = CreateAddonAccount(society.name, nil, amount or 0)
 
-    return true, "Success"
+    return true, SharedAccounts[society.name]
 end
 exports("AddSharedAccount", AddSharedAccount)
 

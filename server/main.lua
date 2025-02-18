@@ -50,29 +50,30 @@ function GetSharedAccount(name)
 end
 exports("GetSharedAccount", GetSharedAccount)
 
---- Adds a shared account for a society/job.
--- @param society (table) A table containing:
---        society.name (string) - Unique job/society identifier (e.g., "mechanic", "police").
---        society.label (string) - Display label for the job/society (e.g., "Mechanic", "Police Department").
--- @param amount (number, optional) The starting balance for the shared account. Default is 0.
--- @return (boolean, string|table) Returns `true, account` on success, or `false, "error message"` on failure.
+---@class Society
+---@field name string Unique job/society identifier (e.g., "mechanic", "police").
+---@field label string Display label for the job/society (e.g., "Mechanic", "Police Department").
+
+---@param society Society The society table containing name and label.
+---@param amount? number The starting balance for the shared account. Default is 0.
+---@return table|nil account Returns the account table on success, or `nil` on failure.
 function AddSharedAccount(society, amount)
     -- Validate input parameters
-    if not society or type(society) ~= 'table' then
-        return false, "Expected society as a table"
+    if type(society) ~= "table" then
+        error("Expected society as a table")
     end
 
-    if not society.name or type(society.name) ~= "string" or society.name == "" then
-        return false, "Invalid society.name provided"
+    if type(society.name) ~= "string" or society.name == "" then
+        error("Invalid society.name provided")
     end
 
-    if not society.label or type(society.label) ~= "string" or society.label == "" then
-        return false, "Invalid society.label provided"
+    if type(society.label) ~= "string" or society.label == "" then
+        error("Invalid society.label provided")
     end
 
     -- Check if account already exists
-    if SharedAccounts[society.name] ~= nil then
-        return false, "Account already exists"
+    if SharedAccounts[society.name] then
+        return SharedAccounts[society.name]
     end
 
     -- Insert into `addon_account` table
@@ -81,7 +82,7 @@ function AddSharedAccount(society, amount)
     })
 
     if not accountInsert then
-        return false, "Database error: Failed to insert into addon_account"
+        error("Database error: Failed to insert into addon_account")
     end
 
     -- Insert into `addon_account_data` table
@@ -90,13 +91,13 @@ function AddSharedAccount(society, amount)
     })
 
     if not accountDataInsert then
-        return false, "Database error: Failed to insert into addon_account_data"
+        error("Database error: Failed to insert into addon_account_data")
     end
 
     -- Successfully created account
     SharedAccounts[society.name] = CreateAddonAccount(society.name, nil, amount or 0)
 
-    return true, SharedAccounts[society.name]
+    return SharedAccounts[society.name]
 end
 exports("AddSharedAccount", AddSharedAccount)
 

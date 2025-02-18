@@ -48,31 +48,53 @@ function GetSharedAccount(name)
 	return SharedAccounts[name]
 end
 
+--- Adds a shared account for a society/job.
+-- @param society (table) A table containing:
+--        society.name (string) - Unique job/society identifier (e.g., "mechanic", "police").
+--        society.label (string) - Display label for the job/society (e.g., "Mechanic", "Police Department").
+-- @param amount (number, optional) The starting balance for the shared account. Default is 0.
+-- @return (boolean, string|table) Returns `true, account` on success, or `false, "error message"` on failure.
 function AddSharedAccount(society, amount)
-	-- society.name = job_name/society_name
-	-- society.label = label for the job/account
-	-- amount = if the shared account should start with x amount
-	if type(society) ~= 'table' or not society?.name or not society?.label then return end
+    -- Validate input parameters
+    if not society or type(society) ~= 'table' then
+        return false, "Expected society as a table"
+    end
 
-	-- check if account already exist?
-	if SharedAccounts[society.name] ~= nil then return SharedAccounts[society.name] end
+    if not society.name or type(society.name) ~= "string" or society.name == "" then
+        return false, "Invalid society.name provided"
+    end
 
-	-- addon account:
-	local account = MySQL.insert.await('INSERT INTO `addon_account` (name, label, shared) VALUES (?, ?, ?)', {
-		society.name, society.label, 1
-	})
-	if not account then return end
+    if not society.label or type(society.label) ~= "string" or society.label == "" then
+        return false, "Invalid society.label provided"
+    end
 
-	-- if addon account inserted, insert addon account data:
-	local account_data = MySQL.insert.await('INSERT INTO `addon_account_data` (account_name, money) VALUES (?, ?)', {
-		society.name, (amount or 0)
-	})
-	if not account_data then return end
+    -- Check if account already exists
+    if SharedAccounts[society.name] ~= nil then
+        return false, "Account already exists"
+    end
 
-	-- if all data inserted successfully to sql:
-	SharedAccounts[society.name] = CreateAddonAccount(society.name, nil, (amount or 0))
+    -- Insert into `addon_account` table
+    local accountInsert = MySQL.insert.await('INSERT INTO `addon_account` (name, label, shared) VALUES (?, ?, ?)', {
+        society.name, society.label, 1
+    })
 
-	return SharedAccounts[society.name]
+    if not accountInsert then
+        return false, "Database error: Failed to insert into addon_account"
+    end
+
+    -- Insert into `addon_account_data` table
+    local accountDataInsert = MySQL.insert.await('INSERT INTO `addon_account_data` (account_name, money) VALUES (?, ?)', {
+        society.name, amount or 0
+    })
+
+    if not accountDataInsert then
+        return false, "Database error: Failed to insert into addon_account_data"
+    end
+
+    -- Successfully created account
+    SharedAccounts[society.name] = CreateAddonAccount(society.name, nil, amount or 0)
+
+    return true, "Success"
 end
 
 AddEventHandler('esx_addonaccount:getAccount', function(name, owner, cb)

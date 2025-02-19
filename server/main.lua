@@ -56,7 +56,7 @@ exports("GetSharedAccount", GetSharedAccount)
 
 ---@param society Society The society table containing name and label.
 ---@param amount? number The starting balance for the shared account. Default is 0.
----@return table|nil account Returns the account table on success, or `nil` on failure.
+---@return table? account Returns the account table on success, or `nil` on failure.
 function AddSharedAccount(society, amount)
     -- Validate input parameters
     if type(society) ~= "table" then
